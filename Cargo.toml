@@ -1,0 +1,21 @@
+[package]
+name = "graphql-cli"
+description = """
+    A graphql command-line tool
+"""
+license = "MIT/Apache-2.0"
+readme = "README.md"
+keywords = ["command-line", "graphql"]
+categories = ["command-line-utilities"]
+homepage = "http://github.com/tailhook/graphql-cli"
+version = "0.1.0"
+authors = ["paul@colomiets.name"]
+
+[dependencies]
+graphql-parser = "0.2.0"
+structopt = "0.2.3"
+
+[[bin]]
+name = "graphql"
+path = "src/main.rs"
+doc = false
