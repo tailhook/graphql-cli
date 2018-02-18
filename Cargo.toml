@@ -9,7 +9,7 @@ keywords = ["command-line", "graphql"]
 categories = ["command-line-utilities"]
 homepage = "http://github.com/tailhook/graphql-cli"
 version = "0.1.0"
-authors = ["paul@colomiets.name"]
+authors = ["Paul Colomiets <paul@colomiets.name>"]
 
 [dependencies]
 graphql-parser = "0.2.0"
