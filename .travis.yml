@@ -1,0 +1,56 @@
+language: rust
+rust: stable
+os: linux
+dist: trusty
+sudo: false
+addons:
+  apt:
+    packages:
+    - fakeroot
+    - musl-tools
+
+cache:
+- apt
+- cargo
+
+before_cache:
+- rm -r $TRAVIS_BUILD_DIR/target/debug
+
+script:
+- cargo build $CARGO_ARGS
+- cargo test $CARGO_ARGS
+
+jobs:
+  include:
+  - rust: stable
+  - rust: beta
+  - rust: nightly
+
+  # deploy
+  - stage: publish
+    env:
+    # CARGO_TOKEN
+    - secure: "GEPHooXwoE2YeM1kgfwR1K+6nwOui/tHQ15iTvL/ES1h3geHtAYrKY0KSGhVr2uMh1BpC0pGVFPXZxFTRyOR2tFAxlYfU1InsLsJodBNTe4SYifBRxOwZfDB9QgN7Ub6MCOvCmrJFkUeeq/TvCQpk+hSFywPxrWkZzQkNVhE3Jj0wakD6IDpnQSQdM3P00k9eGtO/iJvJevHlzspK04faYYHyRyvMa1EkFZU3HOOOzccH6Fo5CnFcgOSHvAO0WKz36YxRct7wD3ej2uiJEhc/hYksYMTQwKmDhTXBfbFqWKhAEpsmr4gLilMpS0n0T7DBJpYbvjpGJ9x++K1pTtZT6xKNjQwF6NKjJp7mTgU9hLN4+jdPeTH7lq4WhCI5LjZE2E0CLtvBIVakSTyaI3H41IqzJU/FpxOw83pFMuzRz951yMD/Exg88mltEc5F9Sdgp31ADBPS/OWHGisPTd4TEs6aLUNHKeOegf3XMhc0zDVxQNSYvhbaDAVhPZjWlKdw6cJfkfi0bdHMZ5H60UViuzocA1Ata5N9LaSi9Lg5G+dYsSZivxja/7CcB5torZWCjCQpCGe4x6j+xl0dR9BgkMPpEuanahfM1ruez5BE6exAeaLoB4wZKme0Bcogy3/15q2w3SyRqn6q99ewlNcqBtQBD3jG0mnzMTvZjCC1WY="
+    install: true
+
+    before_deploy: |
+      mkdir -p dist
+      rustup target add x86_64-unknown-linux-musl
+      cargo build --target=x86_64-unknown-linux-musl --release
+      fakeroot sh -ecx '
+        install -D target/x86_64-unknown-linux-musl/release/graphql pkg/usr/bin/graphql
+        tar -C pkg -czf dist/graphql-$TRAVIS_TAG.tar.gz usr
+      '
+
+    deploy:
+    - provider: script
+      script: 'cargo publish --verbose --token=$CARGO_TOKEN'
+      on:
+        tags: true
+    - provider: releases
+      api_key:
+        secure: "Z/P2qubFLekL9kU2//P4UJ8Ot4Ni2fi1KfrN1u0YFI/FUAriVSR93ks1E4TPVXfWtVZW11NTadAgm6SAH/a7RcRd3r07Qa4gacGWbSfKcf2KmJ8GpsssXGIwgPvxFDDdC2796W2uEhQmeFodhhHauu+O6wT5WyGn9HHQQoflh+PbLEogVi8ggqr9snBj1218Aj3J25r7g9pR94rsnpxGwIXryvVnGIbXo82ZG+6etKWI6Sg3Ylbm6xz+nZGurJt+m6Neg69I+4pBgcusL5BzKOWHgQ1m/p4lhIwYxzrIc9kxmc4ApganopdunblFtQq614o0WOs2HsjE3ycRPcLdPUcz20NV8Q1ToN86RfEGNFCN+2YJ4mcnSKFZWOyBJwdvPIWJYjWCHnCLO83kdWaxiY5IMHH/29cx1pa4asVsgEgOtmeLCEScZYbwcIlkRazyv7t8oaumURWBSu9DUaCjXoZ5Etd2ZUuXFJ0qay8Tgnxu4tiQaL6Ij15h5cdKW5zJooJIMq5E7a2L+qFpKLDJ2z2oUF6j8O+Lpaq27i8nko+xmr/65GIf4W6uf3MREEE0/I97ZEoxgWwSQ3bl5ciRJOqoMCl/x+XaLqnSMWGOS4QqvzzUuSNlUYio9J+fWe6C8XPA0BVxp688z/ABhrFQ3HcW08Ei2ixSLc3DiN0CnEI="
+      file: "dist/graphql-$TRAVIS_TAG.tar.gz"
+      skip_cleanup: true
+      on:
+        tags: true
