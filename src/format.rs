@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::{Read, Write, stdin, stdout};
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 
 use failure::Error;
 use graphql_parser::{query, parse_query};
@@ -48,6 +48,9 @@ pub fn format_ast_schema<F: Write>(mut f: F, ast: schema::Document, s: &Style)
 
 pub fn query(opts: Options) -> Result<(), Error> {
     let ast = match opts.input {
+        Some(ref inp) if inp == Path::new("-") => {
+            read_ast_query(stdin())?
+        }
         Some(inp) => {
             read_ast_query(File::open(&inp)?)?
         }
@@ -58,6 +61,9 @@ pub fn query(opts: Options) -> Result<(), Error> {
     let mut style = Style::default();
     style.indent(opts.indent);
     match opts.output {
+        Some(ref outp) if outp == Path::new("-") => {
+            format_ast_query(stdout(), ast, &style)?
+        }
         Some(outp) => {
             format_ast_query(File::create(&outp)?, ast, &style)?
         }
@@ -70,6 +76,9 @@ pub fn query(opts: Options) -> Result<(), Error> {
 
 pub fn schema(opts: Options) -> Result<(), Error> {
     let ast = match opts.input {
+        Some(ref inp) if inp == Path::new("-") => {
+            read_ast_schema(stdin())?
+        }
         Some(inp) => {
             read_ast_schema(File::open(&inp)?)?
         }
@@ -80,6 +89,9 @@ pub fn schema(opts: Options) -> Result<(), Error> {
     let mut style = Style::default();
     style.indent(opts.indent);
     match opts.output {
+        Some(ref outp) if outp == Path::new("-") => {
+            format_ast_schema(stdout(), ast, &style)?
+        }
         Some(outp) => {
             format_ast_schema(File::create(&outp)?, ast, &style)?
         }
