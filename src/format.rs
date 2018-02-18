@@ -10,10 +10,14 @@ use graphql_parser::{Style};
 
 #[derive(StructOpt)]
 pub struct Options {
-    #[structopt(short = "f", parse(from_os_str))]
+    #[structopt(short="f", long="file", parse(from_os_str))]
+    #[structopt(help="input file name (default stdin)")]
     input: Option<PathBuf>,
-    #[structopt(short = "o", parse(from_os_str))]
+    #[structopt(short="o", long="output", parse(from_os_str))]
+    #[structopt(help="output file name (default stdout)")]
     output: Option<PathBuf>,
+    #[structopt(long="indent", help="indentation level", default_value="2")]
+    indent: u32,
 }
 
 pub fn read_ast_query<F: Read>(mut f: F) -> Result<query::Document, Error> {
@@ -51,7 +55,8 @@ pub fn query(opts: Options) -> Result<(), Error> {
             read_ast_query(stdin())?
         }
     };
-    let style = Style::default();
+    let mut style = Style::default();
+    style.indent(opts.indent);
     match opts.output {
         Some(outp) => {
             format_ast_query(File::create(&outp)?, ast, &style)?
@@ -72,7 +77,8 @@ pub fn schema(opts: Options) -> Result<(), Error> {
             read_ast_schema(stdin())?
         }
     };
-    let style = Style::default();
+    let mut style = Style::default();
+    style.indent(opts.indent);
     match opts.output {
         Some(outp) => {
             format_ast_schema(File::create(&outp)?, ast, &style)?
