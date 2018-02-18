@@ -1,8 +1,12 @@
 Graphql CLI
 ===========
 
+A command-line tool for graphql written in rust.
 
-A command-line tool that can reformat graphql queries and schema.
+Features (so far):
+
+1. Reformat (indent, prettify) query language
+1. Reformat schema definition language
 
 
 License
