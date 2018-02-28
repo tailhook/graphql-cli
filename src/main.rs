@@ -12,24 +12,20 @@ mod format;
 #[structopt(name = "graphql",
             about = "graphql command-line manipulation tool")]
 enum Options {
-    #[structopt(name = "format-query",
+    #[structopt(name = "format-query", alias = "fq",
         about="format piece of query definition language")]
     FormatQuery(format::Options),
-    #[structopt(name = "fq", about="alias for format-query")]
-    FormatQueryShort(format::Options),
-    #[structopt(name = "format-schema",
+    #[structopt(name = "format-schema", alias = "fs",
         about="format piece of schema definition language")]
     FormatSchema(format::Options),
-    #[structopt(name = "fs", about="alias for format-schema")]
-    FormatSchemaShort(format::Options),
 }
 
 fn main() {
     let result = match Options::from_args() {
-        Options::FormatQuery(fq) | Options::FormatQueryShort(fq) => {
+        Options::FormatQuery(fq) => {
             format::query(fq)
         }
-        Options::FormatSchema(fs) | Options::FormatSchemaShort(fs) => {
+        Options::FormatSchema(fs) => {
             format::schema(fs)
         }
     };
